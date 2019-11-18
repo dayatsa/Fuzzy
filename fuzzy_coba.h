@@ -1,5 +1,6 @@
 #ifndef Fuzzy_h
 #define Fuzzy_h
+
 #include <iostream>
 using namespace std;
 
@@ -14,8 +15,18 @@ class Fuzzy
 {
     private:
         int nb, nm, ns, zero, ps, pm, pb, selisih;
-        float u[7], du[7], last_error, d_error;
+        float data_u[7], u[7], du[7], last_error, d_error;
         //data_fuzzy eJarak, eSudut, eBelok;
+        int	 rule[7][7] = { 
+				  // nb nm ns z  ps pm pb
+					{1, 1, 1, 2, 2, 2, 3}, //nb
+					{1, 1, 2, 2, 2, 2, 3}, //nm
+					{1, 2, 2, 2, 2, 2, 3}, //ns
+			    	{1, 1, 2, 3, 4, 5, 0}, //z
+					{2, 3, 3, 4, 4, 5, 0}, //ps
+					{3, 3, 4, 4, 5, 0, 0}, //pm 
+					{4, 4, 4, 5, 5, 0, 0}, //pb
+				  };
 
     public:
 
@@ -31,6 +42,13 @@ class Fuzzy
             cout << "MASUKKK SINIIII" << endl;
         }
 
+        void print () {
+            for(int i=0; i<7; i++) cout << "u..[" << i << "] : " << u[i] 
+									<< "\t\tdu..[" << i << "] : " << du[i] << endl;
+        }
+
+
+
         float getFuzzy(float error) {
             d_error = error - last_error;
             getDegreeMembership(error, ERROR);
@@ -40,30 +58,36 @@ class Fuzzy
             return defuzzy();
         }
 
+
+
         float defuzzy() {
             float pemb = 0, peny = 0;
             float c[7] = { -16, -8, -5.3, 0, 5.3, 8, 16};
             for (int i = 0; i < 7; i++) {
-                pemb += (c[i] * u[i]);
-                peny += u[i];
+                pemb += (c[i] * data_u[i]);
+                peny += data_u[i];
             }
             return pemb / peny;
         }
 
+
+
         void interference(){
-            for (int i = 0; i < 7; i++) u[i] = 0;
+            for (int i = 0; i < 7; i++) data_u[i] = 0;
             
             for (int i = 0; i < 7; i++) {
                 for (int j = 0; j < 7; j++) { 
                     int k;
                     k = rule[i][j];
-                    u[k] = max(u[k], min(du[i], u[j]));
+                    data_u[k] = max(u[k], min(du[i], u[j]));
                 }
             }
         }
 
+
+
         void getDegreeMembership(float value, bool activation) {
-            if(activation == ERROR) {
+            if(activation == 0) {
                 for(int i=0; i<7; i++)  u[i] = 0;
 
                 if(value <= nb) u[0] = 1;
@@ -99,7 +123,7 @@ class Fuzzy
                 }
             }
 
-            else if(activation == DERROR) {
+            else if(activation == 1) {
                 for(int i=0; i<7; i++)  du[i] = 0;
 
                 if(value <= nb) du[0] = 1;
